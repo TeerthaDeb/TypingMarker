@@ -6,10 +6,12 @@
 #include <bits/stdc++.h>
 #include <conio.h>
 #include <windows.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 using namespace std;
 int width = 119, height = 28; //default for windows 10
 bool run = false;
-int main(); //all other functions can use the main function
+int main();
 
 class player 																											//default template of each players
 {
@@ -19,7 +21,7 @@ private:
 	float average, total_score;
 	char name[50];
 	//functions:
-
+	friend bool compare_players(player , player);
 public:
 	player()
 	{
@@ -144,9 +146,9 @@ void wait(int k)																										//loading screen
 	}
 }
 
-bool compare_players(player &a, player &b)																				//extra perameter for sort function to sort the class instances according to their average score
+bool compare_players(player a, player b)																				//extra perameter for sort function to sort the class instances according to their average score
 {
-	return a.get_average() > b.get_average();
+	return a.average > b.average;
 }
 
 void score_board(float average, float total_score, int total_time)														//Score board function to represent the score board
@@ -156,11 +158,18 @@ void score_board(float average, float total_score, int total_time)														
 	int i;
 	vector<player> plr(10);
 	player temp;
-	fstream file_ptr("score.txt", ios::in);
+	const char* dirname = "C:\\Users\\Public\\Documents\\TDsoftwares\\Typing_Marker";
+	if (mkdir(dirname) == -1){
+		if(errno != 17){
+			gotoxy(10 , 6) , printf("Mail teertha.deb579@gmail.com with the errorcode: ");cout<<errno;
+		}
+	}
+	fstream file_ptr;
+	file_ptr.open("C:\\Users\\Public\\Documents\\TDsoftwares\\Typing_Marker\\score.MTD", ios::in);
 	if (file_ptr){																										//if File pointer finds the file , it would load the file data to the player class instances
 		plr.clear();
 		for (i = 0; i < 10; i++){
-			file_ptr.read(reinterpret_cast<char *>(&temp), sizeof(temp));
+			file_ptr.read((char *)(&temp), sizeof(temp));
 			plr.push_back(temp);
 		}
 	}
@@ -192,10 +201,11 @@ void score_board(float average, float total_score, int total_time)														
 	system("cls");
 	box2();
 	gotoxy(2, 3);
-	file_ptr.open("score.txt", ios::out);
+	file_ptr.open("C:\\Users\\Public\\Documents\\TDsoftwares\\Typing_Marker\\score.MTD", ios::out);
+	printf("");
 	int h = 2;
 	for (i = 0; i < 10; i++){
-		file_ptr.write(reinterpret_cast<char *>(&plr[i]), sizeof(plr[i]));											//Write the data in the record
+		file_ptr.write((char *)(&plr[i]), sizeof(plr[i]));											//Write the data in the record
 		gotoxy(width / 2 - plr[i].get_name_length() - 14, h - 1), cout << "Rank : " << i + 1;
 		gotoxy(width / 2 - 11, h - 1), cout << ";     >>>>>>>>>Name = " << plr[i].get_name() << " <<<<<<<<<";
 		gotoxy(width / 2 - 25, h), cout << "average = " << plr[i].get_average();
@@ -206,6 +216,7 @@ void score_board(float average, float total_score, int total_time)														
 		}
 		gotoxy(width / 2 + 11, h), cout << " , total time = " << plr[i].get_total_time(), h += 3;
 	}
+	printf("");
 	file_ptr.close();
 	plr.clear();																									//clear all the datas from memory
 	gotoxy(0, h);
@@ -399,7 +410,6 @@ void start_typing()																										//Start typing<main program>
 void exit()																												//exiting dialogue print in the screen.
 {
 	system("cls");
-	system("7C");
 	box();
 	gotoxy(width / 2 - 20, height / 2), printf("Are you sure you want to exit?(Y/N) : ");
 	char ch;
@@ -472,6 +482,7 @@ void starting()																											//Starting
 
 int main()																												//Main menu
 {
+	SetConsoleTitle("    																																						Typing Marker");
 	if (run == false)
 	{
 		starting();
